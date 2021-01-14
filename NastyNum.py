@@ -1,0 +1,45 @@
+N = int(input())
+factor, prev = set((2, 3, 5)), set((2, 3, 5))
+dp, now = set(), set()
+dp.add(1)
+dp.update(factor)
+size = 3
+
+while size < N:
+    for n in factor:
+        for m in prev:
+            now.add(n*m)
+    dp.update(now)
+    size += len(now)
+    prev = now
+    #print(now, prev, size)
+    now = set()
+    #print(size, n)
+
+dp = sorted(dp)
+for i, j in enumerate(dp):
+   if i == N-1:
+       print(j)
+       break
+
+
+n = int(input())
+ugly = [0]*N
+ugly[0] = 1
+
+i2, i3, i5 = 0, 0, 0
+next2, next3, next5 = 2, 3, 5
+
+for i in range(1, n):
+    ugly[i] = min(next2, next3, next5)
+    if ugly[i] == next2:
+        i2 += 1
+        next2 = ugly[i2] * 2
+    if ugly[i] == next3:
+        i3 += 1
+        next3 = ugly[i3] * 3
+    if ugly[i] == next5:
+        i5 += 1
+        next5 = ugly[i5] * 5
+print(ugly[n-1])
+
