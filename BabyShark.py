@@ -1,63 +1,64 @@
+import sys
 from collections import deque
 
 N = int(input())
-board = [list(map(int, input().split())) for _ in range(N)]
-visited = [[0 for _ in range(N)] for _ in range(N)]
+board = [list(map(int, sys.stdin.readline().split())) for _ in range(N)]
 movement = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-size = 2
-queue, food = deque(), deque()
-cnt, ans, answer = 0, 0, 0
+queue = deque()
+answer = 0
 
 
-def check():
-    for i in range(N):
-        for j in range(N):
-            if [i, j] in food:
-                board[i][j] = 0
-                visited[i][j] = 1
-                return [i, j]
+def bfs(queue, size):
+    visited = [[0 for _ in range(N)] for _ in range(N)]
+    #print(queue)
+    i, j = queue[0]
+    visited[i][j] = 1
+    count = 0
 
-
-def check_board(shark):
-    for i in range(N):
-        for j in range(N):
-            if board[i][j] != 0 and board[i][j] < shark:
-                return True
-    return False
+    fish = []
+    while queue:
+        lenq = len(queue)
+        while lenq:
+            x, y = queue.popleft()
+            for m in movement:
+                nx, ny = x + m[0], y + m[1]
+                if 0 <= nx < N and 0 <= ny < N:
+                    if not visited[nx][ny]:
+                        if not board[nx][ny] or board[nx][ny] == size:
+                            queue.append([nx, ny])
+                            visited[nx][ny] = 1
+                        elif board[nx][ny] < size:
+                            visited[nx][ny] = 1
+                            fish.append([nx, ny, count+1])
+            lenq -= 1
+        count += 1
+        if fish:
+            return fish
+    return 0
 
 
 for i in range(N):
     for j in range(N):
         if board[i][j] == 9:
-            queue.append([i, j])
             board[i][j] = 0
-            visited[i][j] = 1
+            queue.append([i, j])
 
-while queue:
-    lenq = len(queue)
-    while lenq:
-        x, y = queue.popleft()
-        for m in movement:
-            nx, ny = x + m[0], y + m[1]
-            if N > nx >= 0 and N > ny >= 0:
-                if 0 < board[nx][ny] < size and [nx, ny] not in food:
-                    food.append([nx, ny])
-                elif (board[nx][ny] == size or not board[nx][ny]) and not visited[nx][ny]:
-                    queue.append([nx, ny])
-                    visited[nx][ny] = 1
-        lenq -= 1
-    ans += 1
+cnt = 0
+size = 2
+while True:
+    cand = bfs(queue, size)
+    if not cand:
+        print(answer)
+        break
+    cnt += 1
+    cand.sort()
+    queue = deque()
+    x, y, t = cand[0]
+    board[x][y] = 0
+    queue.append([x, y])
+    answer += t
 
-    if food:
-        cnt += 1
-        if cnt == size:
-            size += 1
-            cnt = 0
-        if check_board(size):
-            answer += ans
-            ans = 0
-        queue = deque()
-        visited = [[0 for _ in range(N)] for _ in range(N)]
-        queue.append(check())
-        food = deque()
-print(answer)
+    if cnt == size:
+        size += 1
+        cnt = 0
+
