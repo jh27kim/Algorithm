@@ -1,32 +1,29 @@
 import sys
 
 N, C = map(int, input().split())
-x = [int(sys.stdin.readline()) for _ in range(N)]
+x = list(int(sys.stdin.readline()) for _ in range(N))
+
 x.sort()
+left, right = 1, x[-1]
 answer = 0
 
-
-def check(mid):
-    cnt = C-1
-    prev = x[0]
-    #print(x, mid)
-    for i in range(1, len(x)):
-        if x[i] - prev < mid:
-            continue
-        #print(x[i])
-        cnt -= 1
-        prev = x[i]
-    return True if cnt <= 0 else False
-
-
-left, right = 1, x[-1]
-
 while left <= right:
-    mid = (left + right)//2
-    if check(mid):
-        #print(mid)
+    mid = (left + right) // 2
+    routers = 1
+    start = x[0]
+    for i in range(1, len(x)):
+        nxt = start + mid
+        #print(nxt, mid)
+        if x[i] < nxt:
+            continue
+        start = x[i]
+        routers += 1
+    #print(routers, mid)
+
+    if routers >= C:
         answer = mid
         left = mid + 1
     else:
         right = mid - 1
+
 print(answer)
