@@ -1,28 +1,43 @@
-from collections import deque
+import sys
 
-F, S, G, U, D = map(int, input().split())
-visited = [0 for _ in range(F)]
+answer = sys.maxsize
+N = int(input())
+board = [list(map(int, input().split())) for _ in range(N)]
+queue = []
 
-queue = deque()
-queue.append(S)
-cnt = -1
-visited[S-1] = 1
 
-while queue:
-    lenq = len(queue)
-    while lenq:
-        x = queue.popleft()
-        nx, nx2 = x + U, x - D
-        if F >= nx > 0 and not visited[nx-1]:
-            queue.append(nx)
-            visited[nx-1] = 1
-        if F >= nx2 > 0 and not visited[nx2-1]:
-            queue.append(nx2)
-            visited[nx2-1] = 1
-        lenq -= 1
-    cnt += 1
+def check(queue):
+    start = 0
+    link = 0
+    link_team = [1 for _ in range(N)]
 
-if visited[G-1]:
-    print(cnt)
-else:
-    print('use the stairs')
+    for i in range(N//2):
+        link_team[queue[i]] = 0
+        for j in range(i+1, N//2):
+            x, y = queue[i], queue[j]
+            start += board[x][y]
+            start += board[y][x]
+
+    for i in range(N):
+        for j in range(i+1, N):
+            if link_team[i] and link_team[j]:
+                link += board[i][j]
+                link += board[j][i]
+    return abs(start - link)
+
+
+def dfs(queue, x):
+    global answer
+
+    if len(queue) == N//2:
+        answer = min(answer, check(queue))
+        return
+
+    for i in range(x, N):
+        queue.append(i)
+        dfs(queue, i+1)
+        queue.pop()
+
+
+dfs(queue, 0)
+print(answer)
