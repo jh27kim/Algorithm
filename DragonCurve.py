@@ -1,5 +1,4 @@
 N = int(input())
-import numpy as np
 
 def plotcurve(points, g):
     if g == 0:
