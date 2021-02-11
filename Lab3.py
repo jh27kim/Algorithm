@@ -1,60 +1,75 @@
 from collections import deque
 import copy
 
-
 N, M = map(int, input().split())
 board = [list(map(int, input().split())) for _ in range(N)]
-visited = [[0 for _ in range(N)] for _ in range(N)]
-movement = [[1, 0], [-1, 0], [0, 1], [0, -1]]
-answer = []
+movement = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+virus = []
+queue = deque()
+answer = int(1e9)
+
+for i in range(N):
+    for j in range(N):
+        if board[i][j] == 2:
+            virus.append([i, j])
+
+checked = [0 for _ in range(len(virus))]
 
 
-def bfs():
-    cnt = 0
+def bfs(queue):
     q = copy.deepcopy(queue)
-    check = copy.deepcopy(visited)
+    visited = [[0 for _ in range(N)] for _ in range(N)]
+    total_count, virus_count = 0, 0
+
+    for x, y in q:
+        visited[x][y] = 1
+
     while q:
         lenq = len(q)
+        move_flag, blank_flag = 0, 1
         while lenq:
             x, y = q.popleft()
             for m in movement:
                 nx, ny = x + m[0], y + m[1]
-                if N > nx >= 0 and N > ny >=0:
-                    if not check[nx][ny] and board[nx][ny] != 1:
+                if 0 <= nx < N and 0 <= ny < N:
+                    if not visited[nx][ny] and board[nx][ny] != 1:
+                        visited[nx][ny] = 1
                         q.append([nx, ny])
-                        check[nx][ny] = 1
-                        if board[nx][ny] == 0:
-                            last_change = cnt + 1
+                        move_flag = 1
+                        if not board[nx][ny]:
+                            blank_flag = 0
             lenq -= 1
-        cnt += 1
-    for x in range(N):
-        for y in range(N):
-            if check[x][y] == 0 and board[x][y] == 0:
+
+        if move_flag == 1:
+            if blank_flag == 0:
+                total_count += virus_count + 1
+                virus_count = 0
+
+            else:
+                virus_count += 1
+
+    for i in range(N):
+        for j in range(N):
+            if not visited[i][j] and board[i][j] == 0:
                 return -1
-    return last_change
+
+    return total_count
 
 
-def dfs(x1, x2, depth):
+def dfs(start):
     global answer
-    if depth == M:
-        answer.append(bfs())
+
+    if len(queue) == M:
+        res = bfs(queue)
+        if res != -1:
+            answer = min(answer, res)
         return
 
-    for i in range(x1, N):
-        n = x2 if x1 == i else 0
-        for j in range(n, N):
-            if board[i][j] == 2:
-                queue.append([i, j])
-                visited[i][j] = 1
-                dfs(i, j+1, depth + 1)
-                queue.pop()
-                visited[i][j] = 0
+    for i in range(start, len(virus)):
+        queue.append(virus[i])
+        dfs(i+1)
+        queue.pop()
 
 
-queue = deque()
-dfs(0, 0, 0)
-
-if len(set(answer)) == 1 and answer[0] == -1:
-    print(-1)
-else:
-    print(min(x for x in answer if x > 0))
+dfs(0)
+print(-1 if answer == int(1e9) else answer)
